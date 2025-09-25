@@ -1,0 +1,6 @@
+{
+  "name": "Java DevContainer",
+  "image": "mcr.microsoft.com/devcontainers/java",
+  "postCreateCommand": "sh ./setup.sh",
+  "remoteUser": "vscode"
+}

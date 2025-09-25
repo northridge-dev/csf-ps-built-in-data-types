@@ -1,0 +1,51 @@
+name: Grade Assignment
+
+on:
+  push:
+    branches: [solution]
+  pull_request:
+    branches: [main]
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "microsoft"
+          java-version: "21"
+
+      - name: 📦 Download JUnit Console Runner
+        run: |
+          mkdir -p lib
+          curl -L -o lib/junit-platform-console-standalone.jar \
+            https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.13.3/junit-platform-console-standalone-1.13.3.jar
+
+      - name: 🧪 Compile and run tests
+        run: |
+          mkdir -p bin
+          javac -cp lib/junit-platform-console-standalone.jar -d bin src/*.java tests/*.java
+
+          java -jar lib/junit-platform-console-standalone.jar execute \
+            --class-path bin \
+            --scan-class-path \
+            --reports-dir test-results \
+            --details-theme ascii \
+            --details tree > test-results/output.txt
+
+      - name: 📤 Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results
+
+      - name: Create test summary
+        uses: test-summary/action@v2
+        with:
+          paths: test-results/**/*.xml
+        if: always()
